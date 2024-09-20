@@ -1,55 +1,44 @@
 
 const express=require('express');
-const {adminAuth}=require('./middlewares/auth');
+const {connectDb}=require('./config/database');
+const User=require('./models/user')
+
+
 
 const app=express();
 const port=7777;
 
-
-app.use("/admin/",adminAuth)
-
-//Admin
-app.get("/admin/getAdmin",(req,res,next)=>{
-    
-    
-    console.log('Admin Data sent')
-    //Error Handling through try catch.
-    //Fetch data from database
-    try{ 
-    throw new Error("Cannot fetch data")
+app.post("/user",async (req,res,next)=>{
+    const newUser={
+        firstName:"Akshay",
+        lastName:"Saini",
+        emailId:"akshay@saini.com",
+        password:"akshay@123"
     }
-    catch(err){
-        res.status(500).send(err);
+    try{
+    const user=new User(newUser);
+    await user.save();
+    res.send("User created successfully")}
+    catch(error){
+        res.status(400).send("Failed to create user")
     }
-      res.send("Admin Data Sent")
-    
-})
 
-
-app.delete("/admin/deleteAdmin",(req,res,next)=>{
-    console.log('Admin deleted')
-    res.send("Admin Deleted")
 
 })
 
-//User
-app.get("/user",(req,res,next)=>{
-    console.log('User Data Logged');
-    //Error handle will occur at wild card 
-    //Fetch data from database
-    throw new Error("Cannot fetch user data");
-    res.send("User Data sent");
-})
+connectDb().
+then(
+    ()=>{
+        console.log("Db connection successfull");
+        app.listen(port,()=>{
+            console.log("Server up and Running");
+        })
 
-app.use('/',(err,req,res,next)=>{
-    console.log('Wild card Middleware')
-    console.log(err.message);
-    res.status(502).send(err.message);
-})
+    }
+).
+catch((error)=>{console.log(error);})
 
-app.listen(port,()=>{
-    console.log("Server up and Running");
-})
+
 
 
 
