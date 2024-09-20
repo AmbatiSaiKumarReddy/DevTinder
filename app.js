@@ -5,15 +5,22 @@ const app=express();
 const port=7777;
 
 
-app.use("/",(req,res)=>{
-    res.send("Hello Dev")
-})
-app.use("/wait",(req,res)=>{
-    res.send("wait Dev")
-})
+//Basically we can use this like for Example:app.use("/route",RouteHandler,[RouteHandler2,RouteHandler3],RouteHandler4,RouteHandler5);
 
-app.use("/path",(req,res)=>{
-    res.send("wait Dev")
+app.use("/user",[(req,res,next)=>{
+    console.log("Handler 1");
+    //res.send("Response 1");
+    next();
+
+},(req,res,next)=>{
+    console.log("Handler 2");
+    //res.send("Response 2");
+    next();
+}],
+(req,res,next)=>{
+    console.log("Handler 3");
+    res.send("Response 3");
+    //next();
 })
 
 
