@@ -38,7 +38,7 @@ app.get("/feed",async(req,res,)=>{
 
 })
 
-
+//Inserting Data
 app.post("/user",async (req,res,next)=>{
     console.log(req.body);
     
@@ -48,10 +48,46 @@ app.post("/user",async (req,res,next)=>{
     res.send("User created successfully")}
     catch(error){
         console.log(error.message)
-        res.status(400).send("Failed to create user")
+        res.status(400).send("Failed to create user"+"-"+error.message)
     }
 
 
+})
+
+//Update Data of a user Using Patch
+app.patch("/user",async (req,res)=>{
+
+    const data=req.body;
+    const {user_id}=data;
+    try{
+    await User.findByIdAndUpdate(user_id,data)
+   
+    res.send("User Updated Successfully");
+
+    }
+    catch(error){
+        res.status(500).send("User Update Failed");
+    }
+
+    
+    
+})
+
+
+
+//Delete a User from database
+app.delete("/user",async (req,res)=>{
+    try{
+    const {user_id}=req.body
+    const user=await User.findOneAndDelete(user_id)
+    console.log(data);
+    res.send("User Deleted Successfully")
+ }
+ catch(error){
+
+    res.send("Cannot Delete")
+ }
+    
 })
 
 connectDb().
