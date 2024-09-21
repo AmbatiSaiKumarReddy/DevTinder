@@ -2,7 +2,8 @@
 const express=require('express');
 const {connectDb}=require('./config/database');
 const User=require('./models/user')
-
+const bcrypt=require('bcrypt');
+const { validateSignupData } = require('./utils/validations');
 
 
 const app=express();
@@ -23,6 +24,36 @@ app.get("/user",async(req,res,)=>{
 
 })
 
+//Login
+app.post("/login",async(req,res)=>{
+
+    const {emailId,password}=req.body;
+
+    try{
+        const user=await User.findOne({emailId});
+        if(!user){
+            throw new Error("Invalid Credentials")
+        }
+        
+        const isPasswordValid=await bcrypt.compare(password,user.password)
+        console.log(isPasswordValid)
+        if(!isPasswordValid){
+            throw new Error("Invalid Credentials")
+        }
+        else{
+            res.send("Login Successful")
+        }
+
+
+    }
+    catch(error){
+
+        res.status(400).send(error.message)
+    }
+
+
+})
+
 //Feed Api- Get All Users from Database
 
 app.get("/feed",async(req,res,)=>{
@@ -38,12 +69,28 @@ app.get("/feed",async(req,res,)=>{
 
 })
 
-//Inserting Data
-app.post("/user",async (req,res,next)=>{
-    console.log(req.body);
+//Inserting Data(Creating a User)
+app.post("/signup",async (req,res,next)=>{
+    
+    const {firstName,lastName,emailId,password,gender,skills}=req.body;
+    
+    
+    
+    
     
     try{
-    const user=new User(req.body);
+
+    validateSignupData(req);
+    //Encrypt the password
+    const hashPassword=await bcrypt.hash(password,10)
+    const user=new User({
+        firstName,
+        lastName,
+        emailId,
+        password:hashPassword,
+        gender,
+        skills
+    });
     await user.save();
     res.send("User created successfully")}
     catch(error){
@@ -59,14 +106,23 @@ app.patch("/user",async (req,res)=>{
 
     const data=req.body;
     const {user_id}=data;
+
     try{
+
+    //You cannot update email and age once a user is created
+    const ALLOWED_UPDATES=["photoUrl","about","gender","skills","user_id"]
+    const isUpdateAllowed=Object.keys(data).every((k)=>ALLOWED_UPDATES.includes(k))
+
+    if(!isUpdateAllowed){
+        throw new Error("Update not Allowed")
+    }
     await User.findByIdAndUpdate(user_id,data)
    
     res.send("User Updated Successfully");
 
     }
     catch(error){
-        res.status(500).send("User Update Failed");
+        res.status(500).send("User Update Failed"+"-"+error.message);
     }
 
     

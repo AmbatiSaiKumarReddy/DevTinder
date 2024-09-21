@@ -19,7 +19,7 @@ const userSchema=mongoose.Schema({
         required:true,
         lowercase:true,
         validate(value){
-            console.log(validator.isEmail(value));
+            
             if(!validator.isEmail(value)){
                 throw new Error("Email Not Valid")
             }
